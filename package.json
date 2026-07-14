@@ -1,0 +1,27 @@
+{
+  "name": "s75-0726-l-dad",
+  "version": "1.0.0",
+  "description": "> A MERN Stack web application for centralized shipment tracking, delay management, warehouse transfer monitoring, and operational reporting.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kalviumcommunity/S75-0726-L-DAD.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/kalviumcommunity/S75-0726-L-DAD/issues"
+  },
+  "homepage": "https://github.com/kalviumcommunity/S75-0726-L-DAD#readme",
+  "dependencies": {
+    "mongoose": "^9.7.4"
+  }
+}
