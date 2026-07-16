@@ -2,12 +2,13 @@ const mongoose = require('mongoose');
 
 const warehouseTransferSchema = new mongoose.Schema(
   {
-    shipment: { type: mongoose.Schema.Types.ObjectId, ref: 'Shipment', required: true, index: true },
-    fromWarehouse: { type: String, required: true, trim: true, maxlength: 150 },
+    shipment: { type: mongoose.Schema.Types.ObjectId, ref: 'Shipment', required: true },
+    fromWarehouse: { type: String, required: true, trim: true, minlength: 2, maxlength: 150 },
     toWarehouse: {
       type: String,
       required: true,
       trim: true,
+      minlength: 2,
       maxlength: 150,
       validate: {
         validator(value) {
