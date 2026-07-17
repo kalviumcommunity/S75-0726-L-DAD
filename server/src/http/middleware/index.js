@@ -1,3 +1,7 @@
-// Intentionally left minimal.
-// Add shared middleware here as the app grows.
+const { authenticateToken, authorizeRoles } = require('./auth.middleware');
+
+module.exports = {
+  authenticateToken,
+  authorizeRoles,
+};
 

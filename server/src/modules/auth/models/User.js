@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const bcrypt = require('bcrypt');
 const { USER_ROLES } = require('../../../constants/logistics.constants');
 
 // Deliberately lightweight: address ownership is verified by the auth flow, not regex.
@@ -30,6 +31,24 @@ const userSchema = new mongoose.Schema(
     },
   },
 );
+
+userSchema.pre('save', async function hashPassword(next) {
+  if (!this.isModified('password')) {
+    return next();
+  }
+
+  try {
+    const saltRounds = 12;
+    this.password = await bcrypt.hash(this.password, saltRounds);
+    return next();
+  } catch (error) {
+    return next(error);
+  }
+});
+
+userSchema.methods.comparePassword = async function comparePassword(candidatePassword) {
+  return bcrypt.compare(candidatePassword, this.password);
+};
 
 userSchema.index({ email: 1 }, { unique: true });
 
