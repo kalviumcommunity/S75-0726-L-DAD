@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const bcrypt = require('bcrypt');
 const { USER_ROLES } = require('../../../constants/logistics.constants');
 
 const emailPattern = /^\S+@\S+\.\S+$/;
@@ -30,5 +31,23 @@ const userSchema = new mongoose.Schema(
     },
   },
 );
+
+userSchema.pre('save', async function hashPassword(next) {
+  if (!this.isModified('password')) {
+    return next();
+  }
+
+  try {
+    const saltRounds = 12;
+    this.password = await bcrypt.hash(this.password, saltRounds);
+    return next();
+  } catch (error) {
+    return next(error);
+  }
+});
+
+userSchema.methods.comparePassword = async function comparePassword(candidatePassword) {
+  return bcrypt.compare(candidatePassword, this.password);
+};
 
 module.exports = mongoose.models.User || mongoose.model('User', userSchema);
