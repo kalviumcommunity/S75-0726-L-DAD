@@ -1,5 +1,6 @@
 
 node_modules/
+# keep example envs but ignore real secrets
 .env
 .env.*
 !.env.example

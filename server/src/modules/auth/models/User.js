@@ -2,7 +2,8 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const { USER_ROLES } = require('../../../constants/logistics.constants');
 
-const emailPattern = /^\S+@\S+\.\S+$/;
+// Deliberately lightweight: address ownership is verified by the auth flow, not regex.
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const userSchema = new mongoose.Schema(
   {
@@ -10,7 +11,6 @@ const userSchema = new mongoose.Schema(
     email: {
       type: String,
       required: true,
-      unique: true,
       trim: true,
       lowercase: true,
       match: [emailPattern, 'Please provide a valid email address'],
@@ -49,5 +49,7 @@ userSchema.pre('save', async function hashPassword(next) {
 userSchema.methods.comparePassword = async function comparePassword(candidatePassword) {
   return bcrypt.compare(candidatePassword, this.password);
 };
+
+userSchema.index({ email: 1 }, { unique: true });
 
 module.exports = mongoose.models.User || mongoose.model('User', userSchema);
