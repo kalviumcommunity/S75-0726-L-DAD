@@ -1,40 +1,74 @@
+import { useEffect, useState } from 'react';
 import Card from '../../../components/common/Card';
 import Button from '../../../components/common/Button';
 import Table from '../../../components/common/Table';
+import Loader from '../../../components/common/Loader';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
-
-const shipmentStats = [
-  { label: 'Total Shipments', value: '12,482', meta: '+2.1% from last month', trend: 'up' },
-  { label: 'Delivered', value: '9,841', meta: '78.8% delivery rate', trend: 'up' },
-  { label: 'Delayed', value: '842', meta: '6.7% delay rate', trend: 'down' },
-  { label: 'In Transit', value: '1,799', meta: 'Active across 42 routes', trend: 'neutral' }
-];
-
-const statusTableData = [
-  { id: '#LX-90812', origin: 'Shanghai, CN', destination: 'Los Angeles, US', status: 'In Transit', delay: 'On Time', eta: '2026-07-18' },
-  { id: '#LX-90744', origin: 'Rotterdam, NL', destination: 'New York, US', status: 'Customs Hold', delay: '+4h Delay', eta: '2026-07-19' },
-  { id: '#LX-90112', origin: 'Hamburg, DE', destination: 'London, UK', status: 'Delayed', delay: '+24h Delay', eta: '2026-07-20' },
-  { id: '#LX-90820', origin: 'Mumbai, IN', destination: 'Dubai, AE', status: 'Delivered', delay: 'On Time', eta: '2026-07-17' },
-  { id: '#LX-90845', origin: 'Singapore, SG', destination: 'Tokyo, JP', status: 'In Transit', delay: 'On Time', eta: '2026-07-18' }
-];
-
-const recentShipmentsData = [
-  { id: '#LX-90812', origin: 'Shanghai, CN', destination: 'Los Angeles, US', status: 'In Transit', updated: '2 min ago' },
-  { id: '#LX-90744', origin: 'Rotterdam, NL', destination: 'New York, US', status: 'Customs Hold', updated: '15 min ago' },
-  { id: '#LX-90112', origin: 'Hamburg, DE', destination: 'London, UK', status: 'Delayed', updated: '1 hr ago' },
-  { id: '#LX-90820', origin: 'Mumbai, IN', destination: 'Dubai, AE', status: 'Delivered', updated: '3 hr ago' },
-  { id: '#LX-90845', origin: 'Singapore, SG', destination: 'Tokyo, JP', status: 'In Transit', updated: '5 hr ago' }
-];
-
-const delayReasonsData = [
-  { reason: 'Port Congestion', count: 124 },
-  { reason: 'Weather', count: 89 },
-  { reason: 'Customs', count: 67 },
-  { reason: 'Mechanical', count: 34 },
-  { reason: 'Documentation', count: 21 }
-];
+import { dashboardApi, type OverviewData, type DelayBreakdownItem } from '../../../services/api/dashboard.service';
+import { shipmentsApi, type Shipment } from '../../../services/api/shipments.service';
 
 const DashboardLayout = () => {
+  const [loading, setLoading] = useState(true);
+  const [overview, setOverview] = useState<OverviewData | null>(null);
+  const [delayBreakdown, setDelayBreakdown] = useState<DelayBreakdownItem[]>([]);
+  const [shipments, setShipments] = useState<Shipment[]>([]);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const [overviewData, delayData, shipmentsData] = await Promise.all([
+          dashboardApi.getOverview(),
+          dashboardApi.getDelayBreakdown(),
+          shipmentsApi.getShipments({ limit: 10, sortBy: 'createdAt', sortOrder: 'desc' })
+        ]);
+        setOverview(overviewData);
+        setDelayBreakdown(delayData);
+        setShipments(shipmentsData.data);
+      } catch (err: any) {
+        setError(err.response?.data?.message || 'Failed to load dashboard data');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-50">
+        <Loader size="lg" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-50">
+        <div className="rounded-[32px] border border-red-200 bg-white p-8 shadow-sm">
+          <p className="text-xl font-semibold text-red-700">Error</p>
+          <p className="mt-2 text-sm text-red-600">{error}</p>
+          <Button
+            variant="primary"
+            size="md"
+            className="mt-4"
+            onClick={() => window.location.reload()}
+          >
+            Try again
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  const shipmentStats = [
+    { label: 'Total Shipments', value: overview?.totalShipments?.toLocaleString() || '0' },
+    { label: 'Delivered', value: overview?.deliveredShipments?.toLocaleString() || '0' },
+    { label: 'Delayed', value: overview?.delayedShipments?.toLocaleString() || '0' },
+    { label: 'In Transit', value: overview?.inTransitShipments?.toLocaleString() || '0' }
+  ];
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
       <div className="mx-auto flex min-h-screen max-w-[1480px] gap-6 px-4 py-6 sm:px-6 lg:px-8">
@@ -53,45 +87,30 @@ const DashboardLayout = () => {
 
             <section className="grid gap-5 xl:grid-cols-4">
               {shipmentStats.map((stat) => (
-                <Card key={stat.label} title={stat.label} subtitle={stat.meta}>
+                <Card key={stat.label} title={stat.label} subtitle="">
                   <p className="mt-4 text-3xl font-semibold text-slate-900">{stat.value}</p>
-                  <div className="mt-3 flex items-center gap-2 text-sm">
-                    <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-semibold ${
-                      stat.trend === 'up' ? 'bg-emerald-50 text-emerald-700' :
-                      stat.trend === 'down' ? 'bg-red-50 text-red-700' :
-                      'bg-slate-100 text-slate-700'
-                    }`}>
-                      {stat.trend === 'up' ? '↑' : stat.trend === 'down' ? '↓' : '→'} {stat.meta}
-                    </span>
-                  </div>
                 </Card>
               ))}
             </section>
 
             <section className="grid gap-5 xl:grid-cols-[1.5fr_1fr]">
-              <Card title="Shipment Status" subtitle="Current status of all tracked shipments.">
+              <Card title="Recent Shipments" subtitle="Latest delivery progress at a glance.">
                 <Table
                   columns={[
-                    { key: 'id', header: 'Shipment ID' },
-                    { key: 'origin', header: 'Origin' },
-                    { key: 'destination', header: 'Destination' },
-                    { key: 'status', header: 'Status', render: (row) => (
+                    { key: 'shipmentId', header: 'Shipment ID', render: (row) => <span className="font-semibold text-slate-900">{row.shipmentId}</span> },
+                    { key: 'currentStatus', header: 'Status', render: (row) => (
                       <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                        row.status === 'Delivered' ? 'bg-emerald-50 text-emerald-700' :
-                        row.status === 'Delayed' || row.status === 'Customs Hold' ? 'bg-red-50 text-red-700' :
+                        row.currentStatus === 'Delivered' ? 'bg-emerald-50 text-emerald-700' :
+                        row.currentStatus === 'Delayed' ? 'bg-red-50 text-red-700' :
                         'bg-sky-50 text-sky-700'
                       }`}>
-                        {row.status}
+                        {row.currentStatus}
                       </span>
                     )},
-                    { key: 'delay', header: 'Delay Status', render: (row) => (
-                      <span className={row.delay.includes('Delay') ? 'font-semibold text-amber-600' : 'text-emerald-600'}>
-                        {row.delay}
-                      </span>
-                    )},
-                    { key: 'eta', header: 'ETA' }
+                    { key: 'dispatchDate', header: 'Dispatch Date', render: (row) => new Date(row.dispatchDate).toLocaleDateString() },
+                    { key: 'expectedDeliveryDate', header: 'ETA', render: (row) => new Date(row.expectedDeliveryDate).toLocaleDateString() }
                   ]}
-                  data={statusTableData}
+                  data={shipments}
                   keyExtractor={(row) => row.id}
                 />
               </Card>
@@ -99,9 +118,9 @@ const DashboardLayout = () => {
               <Card title="Delay Reasons" subtitle="Breakdown of shipment delays by root cause.">
                 <div className="h-72 w-full">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={delayReasonsData} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
+                    <BarChart data={delayBreakdown} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                      <XAxis dataKey="reason" tick={{ fontSize: 12, fill: '#64748b' }} axisLine={false} tickLine={false} />
+                      <XAxis dataKey="label" tick={{ fontSize: 12, fill: '#64748b' }} axisLine={false} tickLine={false} />
                       <YAxis tick={{ fontSize: 12, fill: '#64748b' }} axisLine={false} tickLine={false} />
                       <Tooltip
                         cursor={{ fill: '#f8fafc' }}
@@ -115,28 +134,6 @@ const DashboardLayout = () => {
             </section>
 
             <section className="grid gap-5 xl:grid-cols-[1.5fr_1fr]">
-              <Card title="Recent Shipments" subtitle="Latest delivery progress at a glance.">
-                <Table
-                  columns={[
-                    { key: 'id', header: 'Shipment ID', render: (row) => <span className="font-semibold text-slate-900">{row.id}</span> },
-                    { key: 'origin', header: 'Origin' },
-                    { key: 'destination', header: 'Destination' },
-                    { key: 'status', header: 'Status', render: (row) => (
-                      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                        row.status === 'Delivered' ? 'bg-emerald-50 text-emerald-700' :
-                        row.status === 'Delayed' || row.status === 'Customs Hold' ? 'bg-red-50 text-red-700' :
-                        'bg-sky-50 text-sky-700'
-                      }`}>
-                        {row.status}
-                      </span>
-                    )},
-                    { key: 'updated', header: 'Last Updated' }
-                  ]}
-                  data={recentShipmentsData}
-                  keyExtractor={(row) => row.id}
-                />
-              </Card>
-
               <div className="flex flex-col gap-5">
                 <Card title="Quick Actions" subtitle="Common operations and shortcuts.">
                   <div className="flex flex-col gap-3">

@@ -1,45 +1,80 @@
-import { createContext, useContext, useMemo, useState, type ReactNode } from 'react';
-
-type User = {
-  name: string;
-  role: string;
-  email: string;
-};
+import { createContext, useContext, useMemo, useState, useEffect, type ReactNode } from 'react';
+import { authApi, type User } from '../../services/api/auth.service';
 
 type AuthContextType = {
   isAuthenticated: boolean;
-  user: User;
-  login: (email: string, password: string) => void;
+  user: User | null;
+  login: (email: string, password: string) => Promise<void>;
   logout: () => void;
-};
-
-const defaultUser: User = {
-  name: 'Alicia Chen',
-  role: 'Logistics Operations',
-  email: 'alicia@ldad.example'
+  loading: boolean;
+  error: string | null;
+  clearError: () => void;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const login = () => {
-    setIsAuthenticated(true);
+  // Check for existing token and validate it on mount
+  useEffect(() => {
+    const initAuth = async () => {
+      const token = localStorage.getItem('authToken');
+      if (token) {
+        try {
+          const userData = await authApi.getMe();
+          setUser(userData);
+          setIsAuthenticated(true);
+        } catch (err) {
+          localStorage.removeItem('authToken');
+        }
+      }
+      setLoading(false);
+    };
+    initAuth();
+  }, []);
+
+  const login = async (email: string, password: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { token, user: userData } = await authApi.login(email, password);
+      localStorage.setItem('authToken', token);
+      setUser(userData);
+      setIsAuthenticated(true);
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.message || 'Login failed. Please check your credentials.';
+      setError(errorMessage);
+      throw new Error(errorMessage);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const logout = () => {
+    localStorage.removeItem('authToken');
+    setUser(null);
     setIsAuthenticated(false);
+  };
+
+  const clearError = () => {
+    setError(null);
   };
 
   const value = useMemo(
     () => ({
       isAuthenticated,
-      user: defaultUser,
+      user,
       login,
-      logout
+      logout,
+      loading,
+      error,
+      clearError
     }),
-    [isAuthenticated]
+    [isAuthenticated, user, loading, error]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
