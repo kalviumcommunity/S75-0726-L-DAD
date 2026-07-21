@@ -34,3 +34,16 @@ test('shipment query validation applies defaults', () => {
   assert.equal(normalizedInput.page, 1);
   assert.equal(normalizedInput.limit, 10);
 });
+
+test('shipment query validation accepts valid dateField', () => {
+  const { errors, normalizedInput } = validateShipmentQueryInput({ dateField: 'expectedDeliveryDate' });
+
+  assert.equal(errors.length, 0);
+  assert.equal(normalizedInput.dateField, 'expectedDeliveryDate');
+});
+
+test('shipment query validation rejects invalid dateField', () => {
+  const { errors } = validateShipmentQueryInput({ dateField: 'invalidField' });
+
+  assert(errors.some((error) => error.includes('dateField must be one of')));
+});

@@ -74,10 +74,6 @@ function buildMongoValidationDetails(error) {
   return Object.values(error.errors || {}).map((entry) => entry.message).filter(Boolean);
 }
 
-function escapeRegex(value) {
-  return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
 function validateStatusTransition(existingStatus, nextStatus) {
   if (!nextStatus || nextStatus === existingStatus) {
     return;
@@ -111,24 +107,21 @@ function buildShipmentFilter(input) {
     filter.currentStatus = input.status;
   }
 
+  const allowedDateFields = ['dispatchDate', 'expectedDeliveryDate', 'actualDeliveryDate'];
+  const dateField = allowedDateFields.includes(input.dateField) ? input.dateField : 'dispatchDate';
+
   if (input.fromDate || input.toDate) {
-    filter.dispatchDate = {};
+    filter[dateField] = {};
     if (input.fromDate) {
-      filter.dispatchDate.$gte = new Date(input.fromDate);
+      filter[dateField].$gte = new Date(input.fromDate);
     }
     if (input.toDate) {
-      filter.dispatchDate.$lte = new Date(input.toDate);
+      filter[dateField].$lte = new Date(input.toDate);
     }
   }
 
   if (input.search) {
-    const searchPattern = new RegExp(escapeRegex(input.search), 'i');
-    filter.$or = [
-      { shipmentId: searchPattern },
-      { origin: searchPattern },
-      { destination: searchPattern },
-      { currentLocation: searchPattern },
-    ];
+    filter.$text = { $search: input.search };
   }
 
   return filter;
