@@ -11,6 +11,12 @@ const ALLOWED_SORT_FIELDS = new Set([
   'updatedAt',
 ]);
 
+const ALLOWED_DATE_FIELDS = new Set([
+  'dispatchDate',
+  'expectedDeliveryDate',
+  'actualDeliveryDate',
+]);
+
 function isValidDate(value) {
   if (value == null || value === '') {
     return false;
@@ -226,6 +232,15 @@ function validateShipmentQueryInput(query = {}) {
 
   if (normalizedInput.fromDate && normalizedInput.toDate && toDate(normalizedInput.fromDate) > toDate(normalizedInput.toDate)) {
     errors.push('fromDate cannot be later than toDate');
+  }
+
+  if (query.dateField != null && query.dateField !== '') {
+    const dateField = String(query.dateField).trim();
+    if (!ALLOWED_DATE_FIELDS.has(dateField)) {
+      errors.push(`dateField must be one of: ${Array.from(ALLOWED_DATE_FIELDS).join(', ')}`);
+    } else {
+      normalizedInput.dateField = dateField;
+    }
   }
 
   normalizedInput.search = String(query.search || '').trim();

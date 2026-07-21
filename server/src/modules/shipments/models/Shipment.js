@@ -18,11 +18,13 @@ const shipmentSchema = new mongoose.Schema(
       enum: Object.values(SHIPMENT_STATUSES),
       default: SHIPMENT_STATUSES.DISPATCHED,
       required: true,
+      index: true,
     },
-    dispatchDate: { type: Date, required: true },
+    dispatchDate: { type: Date, required: true, index: true },
     expectedDeliveryDate: {
       type: Date,
       required: true,
+      index: true,
       validate: {
         validator(value) {
           return !this.dispatchDate || value >= this.dispatchDate;
@@ -33,6 +35,7 @@ const shipmentSchema = new mongoose.Schema(
     actualDeliveryDate: {
       type: Date,
       default: null,
+      index: true,
       validate: {
         validator(value) {
           return value == null || !this.dispatchDate || value >= this.dispatchDate;
@@ -52,8 +55,11 @@ const shipmentSchema = new mongoose.Schema(
 );
 
 shipmentSchema.index({ shipmentId: 1 }, { unique: true });
-shipmentSchema.index({ currentStatus: 1, expectedDeliveryDate: 1 });
+shipmentSchema.index({ currentStatus: 1, dispatchDate: -1 });
 shipmentSchema.index({ origin: 1, destination: 1 });
+shipmentSchema.index({ currentStatus: 1, expectedDeliveryDate: 1 });
+shipmentSchema.index({ createdAt: -1 });
+shipmentSchema.index({ shipmentId: 'text', origin: 'text', destination: 'text', currentLocation: 'text' }, { name: 'shipment_search_text', weights: { shipmentId: 10, origin: 5, destination: 5, currentLocation: 3 } });
 
 shipmentSchema.pre('validate', function validateDeliveryState(next) {
   if (this.currentStatus === SHIPMENT_STATUSES.DELIVERED && !this.actualDeliveryDate) {

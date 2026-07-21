@@ -281,11 +281,11 @@ Response format:
 | Description | Returns a paginated shipment list with optional filtering and search. |
 | Authentication Required | Yes |
 | User Role Access | `Manager`, `Coordinator`, `Analyst` |
-| Request Parameters | Query: `page`, `limit`, `search`, `status`, `fromDate`, `toDate`, `sortBy`, `sortOrder` |
+| Request Parameters | Query: `page`, `limit`, `search`, `status`, `fromDate`, `toDate`, `dateField`, `sortBy`, `sortOrder` |
 | Request Body | None |
 | Response Format | `200` with paginated shipment array |
 | Status Codes | `200`, `401`, `500` |
-| Validation Rules | `page` and `limit` must be positive integers; `status` must be a valid shipment status; `fromDate` and `toDate` must be valid dates and `fromDate` cannot exceed `toDate`. |
+| Validation Rules | `page` and `limit` must be positive integers; `status` must be a valid shipment status; `fromDate` and `toDate` must be valid dates and `fromDate` cannot exceed `toDate`; `dateField` must be one of `dispatchDate`, `expectedDeliveryDate`, or `actualDeliveryDate`. |
 | Error Responses | Invalid query parameters, unauthorized access. |
 
 Response format:
@@ -310,6 +310,42 @@ Response format:
   }
 }
 ```
+
+---
+
+### 3.2.1 Search Behavior
+
+The `search` query parameter performs a text search across the following fields:
+- `shipmentId` (highest weight)
+- `origin`
+- `destination`
+- `currentLocation`
+
+This is optimized with a dedicated text index. For exact lookup by business key, prefer `GET /api/shipments/:shipmentId`.
+
+---
+
+### 3.2.2 Date Filtering
+
+By default, `fromDate` and `toDate` filter on `dispatchDate`. Use `dateField` to change the target:
+
+- `dateField=dispatchDate` (default)
+- `dateField=expectedDeliveryDate`
+- `dateField=actualDeliveryDate`
+
+Example:
+`GET /api/shipments?fromDate=2026-07-01&toDate=2026-07-31&dateField=expectedDeliveryDate`
+
+---
+
+### 3.2.3 Filter Combination
+
+All filters are composable. The backend applies `AND` logic between different filter types and `OR` logic within text search fields.
+
+Example:
+`GET /api/shipments?status=Delayed&fromDate=2026-07-01&toDate=2026-07-31&search=Shanghai`
+
+This returns delayed shipments dispatched in July 2026 where the search term matches `shipmentId`, `origin`, `destination`, or `currentLocation`.
 
 ---
 
