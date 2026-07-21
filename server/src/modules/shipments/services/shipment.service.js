@@ -1,5 +1,6 @@
-const { SHIPMENT_STATUSES } = require('../../../constants/logistics.constants');
+const { SHIPMENT_STATUSES, ACTIVITY_TYPES } = require('../../../constants/logistics.constants');
 const ShipmentRepository = require('../repositories/shipment.repository');
+const { logActivity } = require('../../activity-log/services/activity-log.service');
 
 const SHIPMENT_STATUS_FLOW = Object.freeze({
   [SHIPMENT_STATUSES.DISPATCHED]: [SHIPMENT_STATUSES.IN_TRANSIT, SHIPMENT_STATUSES.AT_WAREHOUSE, SHIPMENT_STATUSES.DELAYED, SHIPMENT_STATUSES.DELIVERED],
@@ -139,6 +140,12 @@ async function createShipment(input, actorId) {
       updatedBy: actorId,
     });
 
+    // Log shipment created activity
+    await logActivity(ACTIVITY_TYPES.SHIPMENT_CREATED, actorId, {
+      shipmentId: shipment.shipmentId,
+      currentStatus: shipment.currentStatus,
+    });
+
     return {
       shipment: normalizeShipment(shipment, { expandUsers: false }),
     };
@@ -228,6 +235,13 @@ async function updateShipment(shipmentId, input, actorId) {
   }
 
   const updatedShipment = await ShipmentRepository.findShipmentByBusinessKey(shipmentId, { populate: SHIPMENT_POPULATE });
+
+  // Log shipment updated activity
+  await logActivity(ACTIVITY_TYPES.SHIPMENT_UPDATED, actorId, {
+    shipmentId: updatedShipment.shipmentId,
+    updatedFields: Object.keys(input),
+    currentStatus: updatedShipment.currentStatus,
+  });
 
   return {
     shipment: normalizeShipment(updatedShipment, { expandUsers: false }),

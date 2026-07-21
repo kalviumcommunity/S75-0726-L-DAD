@@ -22,4 +22,12 @@ const DELAY_CATEGORIES = Object.freeze({
   OTHER: 'Other',
 });
 
-module.exports = { USER_ROLES, SHIPMENT_STATUSES, DELAY_CATEGORIES };
+const ACTIVITY_TYPES = Object.freeze({
+  LOGIN: 'Login',
+  SHIPMENT_CREATED: 'Shipment Created',
+  SHIPMENT_UPDATED: 'Shipment Updated',
+  TRANSFER_ADDED: 'Transfer Added',
+  DELAY_REPORT_ADDED: 'Delay Report Added',
+});
+
+module.exports = { USER_ROLES, SHIPMENT_STATUSES, DELAY_CATEGORIES, ACTIVITY_TYPES };

@@ -19,6 +19,7 @@ function registerHttpRoutes() {
   tryMount('../../modules/warehouse-transfers/routes', '/transfers');
   tryMount('../../modules/delay-reports/routes', '/delays');
   tryMount('../../modules/reports/routes/report.routes', '/reports');
+  tryMount('../../modules/activity-log/routes', '/activity');
 
   // Health is handled in app/server.js
   return router;
