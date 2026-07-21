@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
-const { USER_ROLES } = require('../../../constants/logistics.constants');
+const { USER_ROLES, ACTIVITY_TYPES } = require('../../../constants/logistics.constants');
 const UserRepository = require('../repositories/user.repository');
+const { logActivity } = require('../../activity-log/services/activity-log.service');
 
 function createAuthError(statusCode, message, details) {
   const error = new Error(message);
@@ -74,6 +75,11 @@ async function loginUser(input) {
   if (!isPasswordValid) {
     throw createAuthError(401, 'Invalid email or password');
   }
+
+  // Log login activity
+  await logActivity(ACTIVITY_TYPES.LOGIN, existingUser._id, {
+    email: existingUser.email,
+  });
 
   return {
     user: sanitizeUser(existingUser),
