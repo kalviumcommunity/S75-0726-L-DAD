@@ -8,6 +8,7 @@ import NotFoundPage from './features/not-found/pages/NotFoundPage';
 import ProfilePage from './features/profile/pages/ProfilePage';
 import ReportsPage from './features/reports/pages/ReportsPage';
 import ShipmentsPage from './features/shipments/pages/ShipmentsPage';
+import ShipmentTimelinePage from './features/shipments/pages/ShipmentTimelinePage';
 import WarehouseTransfersPage from './features/warehouse-transfers/pages/WarehouseTransfersPage';
 import ProtectedRoute from './routing/protected-routes/ProtectedRoute';
 
@@ -21,6 +22,7 @@ function App() {
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/shipments" element={<ShipmentsPage />} />
+            <Route path="/shipments/:id/timeline" element={<ShipmentTimelinePage />} />
             <Route path="/warehouse-transfers" element={<WarehouseTransfersPage />} />
             <Route path="/delay-reports" element={<DelayReportsPage />} />
             <Route path="/reports" element={<ReportsPage />} />

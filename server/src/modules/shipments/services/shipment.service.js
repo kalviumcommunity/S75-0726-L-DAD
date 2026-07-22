@@ -1,6 +1,9 @@
 const { SHIPMENT_STATUSES, ACTIVITY_TYPES } = require('../../../constants/logistics.constants');
 const ShipmentRepository = require('../repositories/shipment.repository');
 const { logActivity } = require('../../activity-log/services/activity-log.service');
+const WarehouseTransfer = require('../../warehouse-transfers/models/WarehouseTransfer');
+const DelayReport = require('../../delay-reports/models/DelayReport');
+const ActivityLog = require('../../activity-log/models/ActivityLog');
 
 const SHIPMENT_STATUS_FLOW = Object.freeze({
   [SHIPMENT_STATUSES.DISPATCHED]: [SHIPMENT_STATUSES.IN_TRANSIT, SHIPMENT_STATUSES.AT_WAREHOUSE, SHIPMENT_STATUSES.DELAYED, SHIPMENT_STATUSES.DELIVERED],
@@ -267,12 +270,87 @@ async function deleteShipment(shipmentId) {
   };
 }
 
+async function getShipmentTimeline(shipmentId) {
+  const shipment = await ShipmentRepository.findShipmentByBusinessKey(shipmentId);
+  if (!shipment) {
+    throw createServiceError(404, 'Shipment not found');
+  }
+
+  const [transfers, delays, activities] = await Promise.all([
+    WarehouseTransfer.find({ shipment: shipment._id }).sort({ transferTimestamp: 1 }).lean(),
+    DelayReport.find({ shipment: shipment._id }).sort({ delayTimestamp: 1 }).lean(),
+    ActivityLog.find({ 'metadata.shipmentId': shipmentId }).sort({ createdAt: 1 }).lean(),
+  ]);
+
+  const timeline = [];
+
+  // Add shipment creation event
+  timeline.push({
+    type: 'Shipment',
+    event: 'Created',
+    timestamp: shipment.createdAt,
+    details: {
+      origin: shipment.origin,
+      destination: shipment.destination,
+    },
+  });
+
+  // Add warehouse transfer events
+  transfers.forEach((transfer) => {
+    timeline.push({
+      type: 'Transfer',
+      event: 'Warehouse Transfer',
+      timestamp: transfer.transferTimestamp,
+      details: {
+        fromWarehouse: transfer.fromWarehouse,
+        toWarehouse: transfer.toWarehouse,
+        remarks: transfer.remarks,
+      },
+    });
+  });
+
+  // Add delay report events
+  delays.forEach((delay) => {
+    timeline.push({
+      type: 'Delay',
+      event: delay.delayCategory,
+      timestamp: delay.delayTimestamp,
+      details: {
+        reason: delay.delayReason,
+        remarks: delay.remarks,
+      },
+    });
+  });
+
+  // Add shipment status update events from activity log
+  activities.forEach((activity) => {
+    if (activity.type === ACTIVITY_TYPES.SHIPMENT_UPDATED && activity.metadata.currentStatus) {
+      timeline.push({
+        type: 'Status',
+        event: activity.metadata.currentStatus,
+        timestamp: activity.createdAt,
+        details: {
+          updatedFields: activity.metadata.updatedFields,
+        },
+      });
+    }
+  });
+
+  // Sort all events by timestamp
+  timeline.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+  return {
+    timeline,
+  };
+}
+
 module.exports = {
   createShipment,
   getShipmentByBusinessKey,
   listShipments,
   updateShipment,
   deleteShipment,
+  getShipmentTimeline,
   normalizeShipment,
   validateStatusTransition,
 };

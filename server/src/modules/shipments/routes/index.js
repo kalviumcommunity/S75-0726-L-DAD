@@ -6,6 +6,7 @@ const {
   getById,
   update,
   remove,
+  getTimeline,
 } = require('../controllers/shipment.controller');
 const { USER_ROLES } = require('../../../constants/logistics.constants');
 
@@ -15,6 +16,7 @@ router.use(authenticateToken);
 
 router.get('/', authorizeRoles(USER_ROLES.MANAGER, USER_ROLES.COORDINATOR, USER_ROLES.ANALYST), getAll);
 router.get('/:id', authorizeRoles(USER_ROLES.MANAGER, USER_ROLES.COORDINATOR, USER_ROLES.ANALYST), getById);
+router.get('/:id/timeline', authorizeRoles(USER_ROLES.MANAGER, USER_ROLES.COORDINATOR, USER_ROLES.ANALYST), getTimeline);
 router.post('/', authorizeRoles(USER_ROLES.MANAGER, USER_ROLES.COORDINATOR), create);
 router.put('/:id', authorizeRoles(USER_ROLES.MANAGER, USER_ROLES.COORDINATOR), update);
 router.patch('/:id', authorizeRoles(USER_ROLES.MANAGER, USER_ROLES.COORDINATOR), update);

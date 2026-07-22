@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import PageHeader from '../../../components/common/PageHeader';
 import Card from '../../../components/common/Card';
 import Table from '../../../components/common/Table';
@@ -203,7 +204,12 @@ const ShipmentsPage = () => {
                 { key: 'destination', header: 'Destination', sortable: true },
                 { key: 'dispatchDate', header: 'Dispatch Date', sortable: true, render: (row) => new Date(row.dispatchDate).toLocaleDateString() },
                 { key: 'expectedDeliveryDate', header: 'ETA', sortable: true, render: (row) => new Date(row.expectedDeliveryDate).toLocaleDateString() },
-                { key: 'actualDeliveryDate', header: 'Actual Delivery', render: (row) => row.actualDeliveryDate ? new Date(row.actualDeliveryDate).toLocaleDateString() : '-' }
+                { key: 'actualDeliveryDate', header: 'Actual Delivery', render: (row) => row.actualDeliveryDate ? new Date(row.actualDeliveryDate).toLocaleDateString() : '-' },
+                { key: 'actions', header: 'Actions', render: (row) => (
+                  <Link to={`/shipments/${row.shipmentId}/timeline`} className="text-sm font-medium text-slate-600 hover:text-slate-900 transition">
+                    View Timeline
+                  </Link>
+                )}
               ]}
               data={shipments}
               keyExtractor={(row) => row.id}

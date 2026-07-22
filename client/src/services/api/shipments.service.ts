@@ -28,6 +28,7 @@ export interface TimelineItem {
   type: string;
   event: string;
   timestamp: string;
+  details?: Record<string, any>;
 }
 
 export const shipmentsApi = {

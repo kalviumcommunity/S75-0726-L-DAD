@@ -4,6 +4,7 @@ const {
   listShipments,
   updateShipment: updateShipmentService,
   deleteShipment: deleteShipmentService,
+  getShipmentTimeline,
 } = require('../services/shipment.service');
 const {
   validateCreateShipmentInput,
@@ -126,10 +127,29 @@ async function remove(req, res) {
   }
 }
 
+async function getTimeline(req, res) {
+  try {
+    const { isValid, shipmentId } = validateShipmentIdParam(req.params.id);
+    if (!isValid) {
+      return sendValidationError(res, ['shipmentId must be uppercase and contain only letters, numbers, and hyphens']);
+    }
+
+    const result = await getShipmentTimeline(shipmentId);
+    return res.status(200).json({
+      success: true,
+      message: 'Shipment timeline fetched successfully',
+      data: result.timeline,
+    });
+  } catch (error) {
+    return sendError(res, error);
+  }
+}
+
 module.exports = {
   create,
   getAll,
   getById,
   update,
   remove,
+  getTimeline,
 };
