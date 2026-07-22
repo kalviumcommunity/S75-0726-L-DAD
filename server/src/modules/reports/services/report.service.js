@@ -137,7 +137,7 @@ async function exportShipmentData(input) {
   }));
 
   const parser = new Parser({ fields: SHIPMENT_EXPORT_FIELDS, withBOM: true });
-  const csv = await parser.parseAsync(rows);
+  const csv = parser.parse(rows);
 
   return {
     csv,
@@ -182,7 +182,7 @@ async function exportDelayReportsData(input) {
   }));
 
   const parser = new Parser({ fields: DELAY_REPORT_EXPORT_FIELDS, withBOM: true });
-  const csv = await parser.parseAsync(rows);
+  const csv = parser.parse(rows);
 
   return {
     csv,
