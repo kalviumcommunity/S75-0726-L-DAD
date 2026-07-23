@@ -19,6 +19,12 @@ const userSchema = new mongoose.Schema(
     password: { type: String, required: true, minlength: 8, select: false },
     role: { type: String, enum: Object.values(USER_ROLES), required: true },
     isActive: { type: Boolean, default: true },
+    theme: { type: String, enum: ['light', 'dark'], default: 'light' },
+    notificationPreferences: {
+      emailAlerts: { type: Boolean, default: true },
+      pushNotifications: { type: Boolean, default: true },
+      weeklyDigest: { type: Boolean, default: false },
+    },
   },
   {
     timestamps: true,

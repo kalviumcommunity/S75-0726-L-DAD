@@ -1,5 +1,19 @@
-const { registerUser, loginUser, getUserProfile, logoutUser } = require('../services/auth.service');
-const { validateRegisterInput, validateLoginInput } = require('../validators/auth.validators');
+const {
+  registerUser,
+  loginUser,
+  getUserProfile,
+  logoutUser,
+  updateUserProfile,
+  changeUserPassword,
+  updateUserPreferences,
+} = require('../services/auth.service');
+const {
+  validateRegisterInput,
+  validateLoginInput,
+  validateUpdateProfileInput,
+  validatePasswordChangeInput,
+  validatePreferencesInput,
+} = require('../validators/auth.validators');
 
 function sendError(res, error) {
   const statusCode = error.statusCode || 500;
@@ -72,6 +86,72 @@ async function getMe(req, res) {
   }
 }
 
+async function updateProfile(req, res) {
+  try {
+    const validationErrors = validateUpdateProfileInput(req.body);
+    if (validationErrors.length > 0) {
+      return sendError(res, {
+        statusCode: 400,
+        message: 'Validation failed',
+        details: validationErrors,
+      });
+    }
+
+    const result = await updateUserProfile(req.user?.userId, req.body);
+    return res.status(200).json({
+      success: true,
+      message: 'Profile updated successfully',
+      data: result,
+    });
+  } catch (error) {
+    return sendError(res, error);
+  }
+}
+
+async function changePassword(req, res) {
+  try {
+    const validationErrors = validatePasswordChangeInput(req.body);
+    if (validationErrors.length > 0) {
+      return sendError(res, {
+        statusCode: 400,
+        message: 'Validation failed',
+        details: validationErrors,
+      });
+    }
+
+    const result = await changeUserPassword(req.user?.userId, req.body);
+    return res.status(200).json({
+      success: true,
+      message: 'Password updated successfully',
+      data: result,
+    });
+  } catch (error) {
+    return sendError(res, error);
+  }
+}
+
+async function updatePreferences(req, res) {
+  try {
+    const validationErrors = validatePreferencesInput(req.body);
+    if (validationErrors.length > 0) {
+      return sendError(res, {
+        statusCode: 400,
+        message: 'Validation failed',
+        details: validationErrors,
+      });
+    }
+
+    const result = await updateUserPreferences(req.user?.userId, req.body);
+    return res.status(200).json({
+      success: true,
+      message: 'Preferences updated successfully',
+      data: result,
+    });
+  } catch (error) {
+    return sendError(res, error);
+  }
+}
+
 async function logout(_req, res) {
   try {
     const result = await logoutUser();
@@ -89,5 +169,8 @@ module.exports = {
   register,
   login,
   getMe,
+  updateProfile,
+  changePassword,
+  updatePreferences,
   logout,
 };
