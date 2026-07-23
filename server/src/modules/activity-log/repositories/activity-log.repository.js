@@ -1,16 +1,19 @@
-const ActivityLog = require('../models/ActivityLog');
+const AuditLog = require('../models/AuditLog');
 
 async function createActivityLog(data) {
-  return ActivityLog.create(data);
+  return AuditLog.create(data);
 }
 
-async function getActivityLogs({ page = 1, limit = 20, userId = null }) {
+async function getActivityLogs({ page = 1, limit = 20, userId = null, action = null, sortBy = 'createdAt', sortOrder = 'desc' }) {
   const skip = (page - 1) * limit;
-  const query = userId ? { user: userId } : {};
+  const query = {};
+  if (userId) query.user = userId;
+  if (action) query.action = action;
+  const sort = { [sortBy]: sortOrder === 'asc' ? 1 : -1, _id: -1 };
 
   const [activities, totalCount] = await Promise.all([
-    ActivityLog.find(query)
-      .sort({ createdAt: -1 })
+    AuditLog.find(query)
+      .sort(sort)
       .skip(skip)
       .limit(limit)
       .populate('user', 'fullName email role')

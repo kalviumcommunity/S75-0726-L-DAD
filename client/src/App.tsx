@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import Layout from './components/layout/Layout';
 import { AuthProvider } from './context/auth/AuthContext';
 import LoginPage from './features/auth/pages/LoginPage';
+import AuditLogsPage from './features/audit-logs/pages/AuditLogsPage';
 import DashboardPage from './features/dashboard/pages/DashboardPage';
 import DelayReportsPage from './features/delay-reports/pages/DelayReportsPage';
 import NotFoundPage from './features/not-found/pages/NotFoundPage';
@@ -27,6 +28,7 @@ function App() {
             <Route path="/delay-reports" element={<DelayReportsPage />} />
             <Route path="/reports" element={<ReportsPage />} />
             <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/audit-logs" element={<AuditLogsPage />} />
           </Route>
         </Route>
         <Route path="*" element={<NotFoundPage />} />
