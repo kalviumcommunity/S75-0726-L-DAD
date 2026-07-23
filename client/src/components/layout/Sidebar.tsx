@@ -1,5 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import type { ReactNode } from 'react';
+import { useAuth } from '../../context/auth/AuthContext';
 
 type SidebarProps = {
   isOpen?: boolean;
@@ -13,10 +14,14 @@ const navItems = [
   { label: 'Warehouse Transfers', path: '/warehouse-transfers' },
   { label: 'Delay Reports', path: '/delay-reports' },
   { label: 'Reports', path: '/reports' },
+  { label: 'Audit Logs', path: '/audit-logs' },
   { label: 'Profile', path: '/profile' }
 ];
 
 const Sidebar = ({ isOpen = false, onClose, trigger }: SidebarProps) => {
+  const { user } = useAuth();
+  const visibleNavItems = navItems.filter((item) => item.path !== '/audit-logs' || ['Manager', 'Analyst'].includes(user?.role || ''));
+
   return (
     <>
       {trigger}
@@ -40,7 +45,7 @@ const Sidebar = ({ isOpen = false, onClose, trigger }: SidebarProps) => {
         </div>
 
         <nav className="space-y-2">
-          {navItems.map((item) => (
+          {visibleNavItems.map((item) => (
             <NavLink
               key={item.path}
               to={item.path}

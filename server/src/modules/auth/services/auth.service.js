@@ -78,6 +78,8 @@ async function loginUser(input) {
 
   // Log login activity
   await logActivity(ACTIVITY_TYPES.LOGIN, existingUser._id, {
+    entityType: 'User',
+    entityId: existingUser._id,
     email: existingUser.email,
   });
 

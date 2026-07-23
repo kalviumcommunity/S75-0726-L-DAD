@@ -7,4 +7,5 @@ module.exports = {
   Shipment: require('../modules/shipments/models/Shipment'),
   WarehouseTransfer: require('../modules/warehouse-transfers/models/WarehouseTransfer'),
   DelayReport: require('../modules/delay-reports/models/DelayReport'),
+  AuditLog: require('../modules/activity-log/models/AuditLog'),
 };

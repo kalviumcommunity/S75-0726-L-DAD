@@ -3,7 +3,7 @@ const ShipmentRepository = require('../repositories/shipment.repository');
 const { logActivity } = require('../../activity-log/services/activity-log.service');
 const WarehouseTransfer = require('../../warehouse-transfers/models/WarehouseTransfer');
 const DelayReport = require('../../delay-reports/models/DelayReport');
-const ActivityLog = require('../../activity-log/models/ActivityLog');
+const AuditLog = require('../../activity-log/models/AuditLog');
 
 const SHIPMENT_STATUS_FLOW = Object.freeze({
   [SHIPMENT_STATUSES.DISPATCHED]: [SHIPMENT_STATUSES.IN_TRANSIT, SHIPMENT_STATUSES.AT_WAREHOUSE, SHIPMENT_STATUSES.DELAYED, SHIPMENT_STATUSES.DELIVERED],
@@ -145,6 +145,8 @@ async function createShipment(input, actorId) {
 
     // Log shipment created activity
     await logActivity(ACTIVITY_TYPES.SHIPMENT_CREATED, actorId, {
+      entityType: 'Shipment',
+      entityId: shipment._id,
       shipmentId: shipment.shipmentId,
       currentStatus: shipment.currentStatus,
     });
@@ -241,6 +243,8 @@ async function updateShipment(shipmentId, input, actorId) {
 
   // Log shipment updated activity
   await logActivity(ACTIVITY_TYPES.SHIPMENT_UPDATED, actorId, {
+    entityType: 'Shipment',
+    entityId: updatedShipment._id,
     shipmentId: updatedShipment.shipmentId,
     updatedFields: Object.keys(input),
     currentStatus: updatedShipment.currentStatus,
@@ -279,7 +283,7 @@ async function getShipmentTimeline(shipmentId) {
   const [transfers, delays, activities] = await Promise.all([
     WarehouseTransfer.find({ shipment: shipment._id }).sort({ transferTimestamp: 1 }).lean(),
     DelayReport.find({ shipment: shipment._id }).sort({ delayTimestamp: 1 }).lean(),
-    ActivityLog.find({ 'metadata.shipmentId': shipmentId }).sort({ createdAt: 1 }).lean(),
+    AuditLog.find({ 'metadata.shipmentId': shipmentId }).sort({ createdAt: 1 }).lean(),
   ]);
 
   const timeline = [];
@@ -324,7 +328,7 @@ async function getShipmentTimeline(shipmentId) {
 
   // Add shipment status update events from activity log
   activities.forEach((activity) => {
-    if (activity.type === ACTIVITY_TYPES.SHIPMENT_UPDATED && activity.metadata.currentStatus) {
+    if (activity.action === ACTIVITY_TYPES.SHIPMENT_UPDATED && activity.metadata.currentStatus) {
       timeline.push({
         type: 'Status',
         event: activity.metadata.currentStatus,
