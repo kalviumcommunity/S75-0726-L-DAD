@@ -15,6 +15,7 @@ function tryMount(routePath, basePath) {
 function registerHttpRoutes() {
   // Modules
   tryMount('../../modules/auth/routes', '/auth');
+  tryMount('../../modules/users/routes', '/users');
   tryMount('../../modules/shipments/routes', '/shipments');
   tryMount('../../modules/warehouse-transfers/routes', '/transfers');
   tryMount('../../modules/delay-reports/routes', '/delays');

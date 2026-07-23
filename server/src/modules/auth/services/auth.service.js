@@ -71,6 +71,10 @@ async function loginUser(input) {
     throw createAuthError(401, 'Invalid email or password');
   }
 
+  if (!existingUser.isActive) {
+    throw createAuthError(403, 'Your account is inactive. Please contact a manager.');
+  }
+
   const isPasswordValid = await existingUser.comparePassword(password);
   if (!isPasswordValid) {
     throw createAuthError(401, 'Invalid email or password');

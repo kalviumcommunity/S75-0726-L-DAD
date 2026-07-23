@@ -11,6 +11,7 @@ import ReportsPage from './features/reports/pages/ReportsPage';
 import ShipmentsPage from './features/shipments/pages/ShipmentsPage';
 import ShipmentTimelinePage from './features/shipments/pages/ShipmentTimelinePage';
 import WarehouseTransfersPage from './features/warehouse-transfers/pages/WarehouseTransfersPage';
+import UserManagementPage from './features/users/pages/UserManagementPage';
 import ProtectedRoute from './routing/protected-routes/ProtectedRoute';
 
 function App() {
@@ -29,6 +30,9 @@ function App() {
             <Route path="/reports" element={<ReportsPage />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/audit-logs" element={<AuditLogsPage />} />
+            <Route element={<ProtectedRoute allowedRoles={['Manager']} />}>
+              <Route path="/users" element={<UserManagementPage />} />
+            </Route>
           </Route>
         </Route>
         <Route path="*" element={<NotFoundPage />} />

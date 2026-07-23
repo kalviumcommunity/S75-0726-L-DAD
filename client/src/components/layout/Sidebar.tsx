@@ -15,12 +15,17 @@ const navItems = [
   { label: 'Delay Reports', path: '/delay-reports' },
   { label: 'Reports', path: '/reports' },
   { label: 'Audit Logs', path: '/audit-logs' },
+  { label: 'User Management', path: '/users' },
   { label: 'Profile', path: '/profile' }
 ];
 
 const Sidebar = ({ isOpen = false, onClose, trigger }: SidebarProps) => {
   const { user } = useAuth();
-  const visibleNavItems = navItems.filter((item) => item.path !== '/audit-logs' || ['Manager', 'Analyst'].includes(user?.role || ''));
+  const visibleNavItems = navItems.filter((item) => {
+    if (item.path === '/audit-logs') return ['Manager', 'Analyst'].includes(user?.role || '');
+    if (item.path === '/users') return user?.role === 'Manager';
+    return true;
+  });
 
   return (
     <>

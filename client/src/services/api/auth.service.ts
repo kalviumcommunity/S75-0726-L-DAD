@@ -26,8 +26,8 @@ export const authApi = {
   },
 
   getMe: async () => {
-    const response = await httpClient.get<{ success: boolean; data: User }>('/auth/me');
-    return response.data.data;
+    const response = await httpClient.get<{ success: boolean; data: { user: User } }>('/auth/me');
+    return response.data.data.user;
   },
 
   changePassword: async (currentPassword: string, newPassword: string) => {
