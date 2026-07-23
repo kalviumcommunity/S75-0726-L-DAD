@@ -3,12 +3,18 @@ import Card from '../../../components/common/Card';
 import Button from '../../../components/common/Button';
 import Table from '../../../components/common/Table';
 import Loader from '../../../components/common/Loader';
-import { dashboardApi, type OverviewData, type DelayBreakdownItem } from '../../../services/api/dashboard.service';
+import {
+  dashboardApi,
+  type OverviewData,
+  type DelayBreakdownItem,
+  type AnalyticsData,
+} from '../../../services/api/dashboard.service';
 import { shipmentsApi, type Shipment } from '../../../services/api/shipments.service';
 import StatCard from './widgets/StatCard';
 import RecentActivitiesList, { type ActivityItem } from './widgets/RecentActivitiesList';
 import DelayedShipmentsList, { type DelayedShipmentItem } from './widgets/DelayedShipmentsList';
 import DelayReasonsPanel, { type DelayReasonItem } from './widgets/DelayReasonsPanel';
+import AnalyticsChartsPanel from './widgets/AnalyticsChartsPanel';
 
 const formatDate = (value?: string) => {
   if (!value) return '—';
@@ -23,6 +29,7 @@ const DashboardLayout = () => {
   const [loading, setLoading] = useState(true);
   const [overview, setOverview] = useState<OverviewData | null>(null);
   const [delayBreakdown, setDelayBreakdown] = useState<DelayBreakdownItem[]>([]);
+  const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [shipments, setShipments] = useState<Shipment[]>([]);
   const [error, setError] = useState<string | null>(null);
 
@@ -30,13 +37,15 @@ const DashboardLayout = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [overviewData, delayData, shipmentsData] = await Promise.all([
+        const [overviewData, delayData, analyticsData, shipmentsData] = await Promise.all([
           dashboardApi.getOverview(),
           dashboardApi.getDelayBreakdown(),
+          dashboardApi.getAnalytics(),
           shipmentsApi.getShipments({ limit: 10, sortBy: 'createdAt', sortOrder: 'desc' })
         ]);
         setOverview(overviewData);
         setDelayBreakdown(delayData);
+        setAnalytics(analyticsData);
         setShipments(shipmentsData.data);
       } catch (err: any) {
         setError(err.response?.data?.message || 'Failed to load dashboard data');
@@ -201,6 +210,10 @@ const DashboardLayout = () => {
               {stats.map((stat) => (
                 <StatCard key={stat.title} {...stat} />
               ))}
+            </section>
+
+            <section>
+              <AnalyticsChartsPanel analytics={analytics} />
             </section>
 
             <section className="grid gap-5 xl:grid-cols-[1.45fr_0.95fr]">

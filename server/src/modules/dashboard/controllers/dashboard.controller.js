@@ -5,6 +5,7 @@ const {
   getStatusCounts,
   getDelayCategoryCounts,
   getAverageDeliveryTime,
+  getDashboardAnalytics,
   buildDateFilter,
 } = require('../services/dashboard.service');
 
@@ -28,6 +29,20 @@ async function summary(req, res) {
       toDate: req.query.toDate,
     });
     return res.status(200).json({ success: true, message: 'Dashboard summary fetched', data: result });
+  } catch (error) {
+    return sendError(res, error);
+  }
+}
+
+async function analytics(req, res) {
+  try {
+    const data = await getDashboardAnalytics({
+      fromDate: req.query.fromDate,
+      toDate: req.query.toDate,
+      routeLimit: req.query.routeLimit ? Number(req.query.routeLimit) : undefined,
+      warehouseLimit: req.query.warehouseLimit ? Number(req.query.warehouseLimit) : undefined,
+    });
+    return res.status(200).json({ success: true, message: 'Dashboard analytics fetched', data });
   } catch (error) {
     return sendError(res, error);
   }
@@ -84,6 +99,7 @@ async function recent(req, res) {
 
 module.exports = {
   summary,
+  analytics,
   overview,
   statusCounts,
   delayBreakdown,
