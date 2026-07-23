@@ -23,6 +23,7 @@ function registerHttpRoutes() {
   tryMount('../../modules/activity-log/routes', '/activity');
   tryMount('../../modules/activity-log/routes', '/audit-logs');
   tryMount('../../modules/dashboard/routes/dashboard.routes', '/dashboard');
+  tryMount('../../modules/search/routes', '/search');
 
   // Health is handled in app/server.js
   return router;

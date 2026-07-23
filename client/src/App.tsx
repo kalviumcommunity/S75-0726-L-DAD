@@ -8,6 +8,7 @@ import DelayReportsPage from './features/delay-reports/pages/DelayReportsPage';
 import NotFoundPage from './features/not-found/pages/NotFoundPage';
 import ProfilePage from './features/profile/pages/ProfilePage';
 import ReportsPage from './features/reports/pages/ReportsPage';
+import SearchResultsPage from './features/search/pages/SearchResultsPage';
 import ShipmentsPage from './features/shipments/pages/ShipmentsPage';
 import ShipmentTimelinePage from './features/shipments/pages/ShipmentTimelinePage';
 import WarehouseTransfersPage from './features/warehouse-transfers/pages/WarehouseTransfersPage';
@@ -28,6 +29,7 @@ function App() {
             <Route path="/warehouse-transfers" element={<WarehouseTransfersPage />} />
             <Route path="/delay-reports" element={<DelayReportsPage />} />
             <Route path="/reports" element={<ReportsPage />} />
+            <Route path="/search" element={<SearchResultsPage />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/audit-logs" element={<AuditLogsPage />} />
             <Route element={<ProtectedRoute allowedRoles={['Manager']} />}>
