@@ -24,7 +24,6 @@ function createServer() {
   connectMongo().catch((err) => {
     // eslint-disable-next-line no-console
     console.error('[server] Mongo connection failed:', err);
-    process.exit(1);
   });
 
   return app;

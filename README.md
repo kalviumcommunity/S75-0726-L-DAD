@@ -89,8 +89,9 @@ The project aims to:
 
 ## Authentication
 
-- JWT Login
-- Role-based access
+- JWT login and logout
+- Authenticated profile lookup
+- Role-based access control on protected routes
 
 ---
 
@@ -100,6 +101,7 @@ The project aims to:
 - Update shipment
 - Delete shipment
 - View shipment
+- View shipment timeline
 
 Shipment Status
 
@@ -119,16 +121,15 @@ Delivered
 
 ## Warehouse Transfer
 
-- Record transfers
-- Track warehouse movement
+- Transfer model is present in the schema layer
+- Transfer routes are not currently mounted in the live server build
 
 ---
 
 ## Delay Reports
 
-- Add delay reason
-- Update delay report
-- View delayed shipments
+- Delay report model is present in the schema layer
+- Delay report routes are not currently mounted in the live server build
 
 ---
 
@@ -176,6 +177,17 @@ Displays
 ## Reports
 
 - Export shipment data to CSV
+- Export delay report data to CSV
+
+---
+
+## QA & API Assets
+
+The project now includes the following QA and documentation artifacts:
+
+- Postman collection: `docs/L-DAD-API-Collection.postman_collection.json`
+- Bug report: `docs/bug-report.md`
+- API documentation: `docs/api-documentation.md`
 
 ---
 
@@ -393,41 +405,52 @@ npm run dev
 ```
 POST /api/auth/register
 POST /api/auth/login
+GET /api/auth/me
+POST /api/auth/logout
 ```
 
 ## Shipments
 
 ```
 GET /api/shipments
+GET /api/shipments/:id
+GET /api/shipments/:id/timeline
 POST /api/shipments
 PUT /api/shipments/:id
+PATCH /api/shipments/:id
 DELETE /api/shipments/:id
-```
-
-## Warehouse Transfers
-
-```
-GET /api/transfers
-POST /api/transfers
-```
-
-## Delay Reports
-
-```
-GET /api/delays
-POST /api/delays
 ```
 
 ## Dashboard
 
 ```
-GET /api/dashboard
+GET /api/dashboard/summary
+GET /api/dashboard/overview
+GET /api/dashboard/status-counts
+GET /api/dashboard/delay-breakdown
+GET /api/dashboard/average-delivery-time
+GET /api/dashboard/recent
 ```
 
-## Export
+## Reports
 
 ```
-GET /api/export/csv
+GET /api/reports/shipments/csv
+GET /api/reports/delays/csv
+```
+
+## Activity Log
+
+```
+GET /api/activity
+```
+
+## Current Status
+
+- Authenticated shipment, dashboard, and report routes are implemented and documented.
+- Warehouse transfer and delay-report route modules are present in the codebase but not yet mounted in the runtime server build.
+- Full end-to-end QA remains dependent on a reachable MongoDB instance.
+
 ```
 
 ---

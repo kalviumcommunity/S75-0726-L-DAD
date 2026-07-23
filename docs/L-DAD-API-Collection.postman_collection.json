@@ -1,0 +1,429 @@
+{
+  "info": {
+    "name": "L-DAD API Collection",
+    "description": "Postman collection for the implemented L-DAD backend routes. The collection uses environment variables for base URL and bearer token.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"QA User\",\n  \"email\": \"qa@ldad.test\",\n  \"password\": \"Secret123!\",\n  \"role\": \"Coordinator\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "register"]
+            },
+            "description": "Creates a new user account and returns a token."
+          }
+        },
+        {
+          "name": "Login User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"manager@ldad.com\",\n  \"password\": \"Secret123!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Authenticates a user and returns a JWT token."
+          }
+        },
+        {
+          "name": "Get Current User",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "me"]
+            },
+            "description": "Returns the authenticated user's profile."
+          }
+        },
+        {
+          "name": "Logout User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "logout"]
+            },
+            "description": "Logs out the current authenticated user."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Shipments",
+      "item": [
+        {
+          "name": "List Shipments",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/shipments?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "shipments"],
+              "query": [
+                {"key": "page", "value": "1"},
+                {"key": "limit", "value": "10"}
+              ]
+            },
+            "description": "Lists shipments with pagination."
+          }
+        },
+        {
+          "name": "Get Shipment By Id",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/shipments/LDAD-SHP-10021",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "shipments", "LDAD-SHP-10021"]
+            },
+            "description": "Fetches the shipment record for the supplied shipment key."
+          }
+        },
+        {
+          "name": "Get Shipment Timeline",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/shipments/LDAD-SHP-10021/timeline",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "shipments", "LDAD-SHP-10021", "timeline"]
+            },
+            "description": "Returns the shipment timeline."
+          }
+        },
+        {
+          "name": "Create Shipment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"shipmentId\": \"LDAD-SHP-10021\",\n  \"currentStatus\": \"Dispatched\",\n  \"dispatchDate\": \"2026-07-16T09:00:00.000Z\",\n  \"expectedDeliveryDate\": \"2026-07-20T18:00:00.000Z\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/shipments",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "shipments"]
+            },
+            "description": "Creates a new shipment."
+          }
+        },
+        {
+          "name": "Update Shipment",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentStatus\": \"In Transit\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/shipments/LDAD-SHP-10021",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "shipments", "LDAD-SHP-10021"]
+            },
+            "description": "Updates a shipment with partial fields."
+          }
+        },
+        {
+          "name": "Delete Shipment",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/shipments/LDAD-SHP-10021",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "shipments", "LDAD-SHP-10021"]
+            },
+            "description": "Deletes an existing shipment."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Dashboard",
+      "item": [
+        {
+          "name": "Dashboard Summary",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/dashboard/summary?recentLimit=5",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "dashboard", "summary"],
+              "query": [
+                {"key": "recentLimit", "value": "5"}
+              ]
+            },
+            "description": "Fetches the dashboard summary and latest shipment records."
+          }
+        },
+        {
+          "name": "Dashboard Overview",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/dashboard/overview",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "dashboard", "overview"]
+            },
+            "description": "Fetches the dashboard overview metrics."
+          }
+        },
+        {
+          "name": "Dashboard Status Counts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/dashboard/status-counts",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "dashboard", "status-counts"]
+            },
+            "description": "Fetches shipment status counts."
+          }
+        },
+        {
+          "name": "Dashboard Delay Breakdown",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/dashboard/delay-breakdown",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "dashboard", "delay-breakdown"]
+            },
+            "description": "Fetches grouped delay category counts."
+          }
+        },
+        {
+          "name": "Average Delivery Time",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/dashboard/average-delivery-time",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "dashboard", "average-delivery-time"]
+            },
+            "description": "Fetches the average delivery time metric."
+          }
+        },
+        {
+          "name": "Recent Shipments",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/dashboard/recent?limit=5",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "dashboard", "recent"],
+              "query": [
+                {"key": "limit", "value": "5"}
+              ]
+            },
+            "description": "Returns the most recent shipments."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reports",
+      "item": [
+        {
+          "name": "Export Shipments CSV",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/reports/shipments/csv?status=In%20Transit",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reports", "shipments", "csv"],
+              "query": [
+                {"key": "status", "value": "In Transit"}
+              ]
+            },
+            "description": "Exports shipments to CSV with query filters."
+          }
+        },
+        {
+          "name": "Export Delay Reports CSV",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/reports/delays/csv",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reports", "delays", "csv"]
+            },
+            "description": "Exports delay report data to CSV."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Activity Log",
+      "item": [
+        {
+          "name": "Get Activity Log",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/activity",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "activity"]
+            },
+            "description": "Fetches activity log entries for the authenticated user context."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reserved / Not Implemented",
+      "description": "The current server start logs show that transfer and delay-report route modules are not mounted. These requests are placeholders for expected future endpoints.",
+      "item": [
+        {
+          "name": "GET /api/transfers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/transfers",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "transfers"]
+            },
+            "description": "Reserved for future warehouse-transfer listing endpoint."
+          },
+          "disabled": true
+        },
+        {
+          "name": "POST /api/delays",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/delays",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "delays"]
+            },
+            "description": "Reserved for future delay report creation endpoint."
+          },
+          "disabled": true
+        }
+      ]
+    }
+  ]
+}
