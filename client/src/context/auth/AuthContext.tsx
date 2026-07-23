@@ -6,6 +6,8 @@ type AuthContextType = {
   user: User | null;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
+  updateUser: (user: User | null) => void;
+  refreshUser: () => Promise<void>;
   loading: boolean;
   error: string | null;
   clearError: () => void;
@@ -19,23 +21,45 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const applyTheme = (theme: 'light' | 'dark' | undefined) => {
+    const isDark = theme === 'dark';
+    document.documentElement.classList.toggle('dark', isDark);
+    document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
+  };
+
+  const refreshUser = async () => {
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      setUser(null);
+      setIsAuthenticated(false);
+      return;
+    }
+
+    try {
+      const userData = await authApi.getMe();
+      setUser(userData);
+      setIsAuthenticated(true);
+      applyTheme(userData.theme);
+    } catch (err) {
+      localStorage.removeItem('authToken');
+      setUser(null);
+      setIsAuthenticated(false);
+    }
+  };
+
   // Check for existing token and validate it on mount
   useEffect(() => {
     const initAuth = async () => {
-      const token = localStorage.getItem('authToken');
-      if (token) {
-        try {
-          const userData = await authApi.getMe();
-          setUser(userData);
-          setIsAuthenticated(true);
-        } catch (err) {
-          localStorage.removeItem('authToken');
-        }
-      }
+      setLoading(true);
+      await refreshUser();
       setLoading(false);
     };
     initAuth();
   }, []);
+
+  useEffect(() => {
+    applyTheme(user?.theme);
+  }, [user?.theme]);
 
   const login = async (email: string, password: string) => {
     setLoading(true);
@@ -58,6 +82,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     localStorage.removeItem('authToken');
     setUser(null);
     setIsAuthenticated(false);
+    applyTheme('light');
+  };
+
+  const updateUser = (nextUser: User | null) => {
+    setUser(nextUser);
+    if (nextUser) {
+      applyTheme(nextUser.theme);
+    }
   };
 
   const clearError = () => {
@@ -70,6 +102,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       user,
       login,
       logout,
+      updateUser,
+      refreshUser,
       loading,
       error,
       clearError

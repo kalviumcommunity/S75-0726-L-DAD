@@ -18,7 +18,11 @@ html, body, #root {
 }
 
 body {
-  @apply antialiased bg-slate-50 text-slate-900;
+  @apply antialiased bg-slate-50 text-slate-900 transition-colors duration-200;
+}
+
+html.dark body {
+  @apply bg-slate-950 text-slate-100;
 }
 
 * {

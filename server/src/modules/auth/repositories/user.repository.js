@@ -38,11 +38,16 @@ async function updateUserById(userId, data) {
   return User.findByIdAndUpdate(userId, data, { new: true, runValidators: true }).select('-password');
 }
 
+async function findUserByIdWithPassword(userId) {
+  return User.findById(userId).select('+password');
+}
+
 module.exports = {
   createUser,
   findUserByEmail,
   findUserByEmailWithPassword,
   findUserById,
+  findUserByIdWithPassword,
   findUsers,
   updateUserById,
 };

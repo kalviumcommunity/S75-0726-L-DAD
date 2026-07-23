@@ -10,7 +10,7 @@ const pageTitles: Record<string, string> = {
   '/delay-reports': 'Delay Reports',
   '/reports': 'Reports',
   '/audit-logs': 'Audit Logs',
-  '/profile': 'Profile'
+  '/profile': 'Settings'
 };
 
 const TopNavbar = () => {

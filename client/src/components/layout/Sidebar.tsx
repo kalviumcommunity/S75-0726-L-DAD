@@ -16,7 +16,7 @@ const navItems = [
   { label: 'Reports', path: '/reports' },
   { label: 'Audit Logs', path: '/audit-logs' },
   { label: 'User Management', path: '/users' },
-  { label: 'Profile', path: '/profile' }
+  { label: 'Settings', path: '/profile' }
 ];
 
 const Sidebar = ({ isOpen = false, onClose, trigger }: SidebarProps) => {

@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken');
 const { USER_ROLES, ACTIVITY_TYPES } = require('../../../constants/logistics.constants');
 const UserRepository = require('../repositories/user.repository');
 const { logActivity } = require('../../activity-log/services/activity-log.service');
+const bcrypt = require('bcrypt');
 
 function createAuthError(statusCode, message, details) {
   const error = new Error(message);
@@ -102,6 +103,69 @@ async function getUserProfile(userId) {
   return { user: sanitizeUser(user) };
 }
 
+async function updateUserProfile(userId, input) {
+  const fullName = String(input.fullName || '').trim();
+  const email = String(input.email || '').trim().toLowerCase();
+
+  const existingUser = await UserRepository.findUserById(userId);
+  if (!existingUser) {
+    throw createAuthError(404, 'User not found');
+  }
+
+  const duplicate = await UserRepository.findUserByEmail(email);
+  if (duplicate && duplicate._id.toString() !== userId) {
+    throw createAuthError(409, 'A user with this email already exists');
+  }
+
+  const updatedUser = await UserRepository.updateUserById(userId, {
+    fullName,
+    email,
+  });
+
+  return { user: sanitizeUser(updatedUser) };
+}
+
+async function changeUserPassword(userId, input) {
+  const currentPassword = String(input.currentPassword || '');
+  const newPassword = String(input.newPassword || '');
+
+  const existingUser = await UserRepository.findUserByIdWithPassword(userId);
+  if (!existingUser) {
+    throw createAuthError(404, 'User not found');
+  }
+
+  const isCurrentPasswordValid = await existingUser.comparePassword(currentPassword);
+  if (!isCurrentPasswordValid) {
+    throw createAuthError(400, 'Current password is incorrect');
+  }
+
+  existingUser.password = newPassword;
+  await existingUser.save();
+
+  return { message: 'Password changed successfully' };
+}
+
+async function updateUserPreferences(userId, input) {
+  const existingUser = await UserRepository.findUserById(userId);
+  if (!existingUser) {
+    throw createAuthError(404, 'User not found');
+  }
+
+  const theme = String(input.theme || existingUser.theme || 'light').trim().toLowerCase();
+  const notificationPreferences = {
+    emailAlerts: input.notificationPreferences?.emailAlerts ?? existingUser.notificationPreferences?.emailAlerts ?? true,
+    pushNotifications: input.notificationPreferences?.pushNotifications ?? existingUser.notificationPreferences?.pushNotifications ?? true,
+    weeklyDigest: input.notificationPreferences?.weeklyDigest ?? existingUser.notificationPreferences?.weeklyDigest ?? false,
+  };
+
+  const updatedUser = await UserRepository.updateUserById(userId, {
+    theme,
+    notificationPreferences,
+  });
+
+  return { user: sanitizeUser(updatedUser) };
+}
+
 async function logoutUser() {
   return {
     message: 'Logout successful. Please discard the token on the client side.',
@@ -112,5 +176,8 @@ module.exports = {
   registerUser,
   loginUser,
   getUserProfile,
+  updateUserProfile,
+  changeUserPassword,
+  updateUserPreferences,
   logoutUser,
 };
