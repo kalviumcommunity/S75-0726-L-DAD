@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
+const User = require('../../modules/auth/models/User');
 
-function authenticateToken(req, res, next) {
+async function authenticateToken(req, res, next) {
   const authHeader = req.headers.authorization || '';
   const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
 
@@ -14,11 +15,16 @@ function authenticateToken(req, res, next) {
   try {
     const secret = process.env.JWT_SECRET || 'ldad-dev-secret';
     const decoded = jwt.verify(token, secret);
-    req.user = {
-      userId: decoded.sub,
-      email: decoded.email,
-      role: decoded.role,
-    };
+    // Read current account state instead of trusting stale role and active claims in a JWT.
+    const user = await User.findById(decoded.sub).select('email role isActive');
+    if (!user || !user.isActive) {
+      return res.status(401).json({
+        success: false,
+        message: 'This user account is inactive or no longer available',
+      });
+    }
+
+    req.user = { userId: user._id.toString(), email: user.email, role: user.role };
     return next();
   } catch (error) {
     return res.status(401).json({
