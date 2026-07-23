@@ -12,6 +12,7 @@ const {
   validateShipmentQueryInput,
   validateShipmentIdParam,
 } = require('../validators/shipment.validators');
+const logger = require('../../../utils/logger');
 
 function sendError(res, error) {
   const statusCode = error.statusCode || 500;
@@ -43,6 +44,7 @@ async function create(req, res) {
     }
 
     const result = await createShipmentService(normalizedInput, req.user?.userId);
+    logger.logShipment('CREATED', req.user?.userId, result.shipment.shipmentId);
     return res.status(201).json({
       success: true,
       message: 'Shipment created successfully',
@@ -103,6 +105,8 @@ async function update(req, res) {
     }
 
     const result = await updateShipmentService(shipmentId, normalizedInput, req.user?.userId);
+    const statusDetails = normalizedInput.currentStatus ? `status: ${normalizedInput.currentStatus}` : '';
+    logger.logShipment('UPDATED', req.user?.userId, result.shipment.shipmentId, statusDetails);
     return res.status(200).json({
       success: true,
       message: 'Shipment updated successfully',

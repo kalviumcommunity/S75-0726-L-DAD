@@ -14,6 +14,7 @@ const {
   validatePasswordChangeInput,
   validatePreferencesInput,
 } = require('../validators/auth.validators');
+const logger = require('../../../utils/logger');
 
 function sendError(res, error) {
   const statusCode = error.statusCode || 500;
@@ -55,6 +56,7 @@ async function login(req, res) {
   try {
     const validationErrors = validateLoginInput(req.body);
     if (validationErrors.length > 0) {
+      logger.logAuth('LOGIN_FAILED', null, req.body.email, req.ip);
       return sendError(res, {
         statusCode: 400,
         message: 'Validation failed',
@@ -63,12 +65,15 @@ async function login(req, res) {
     }
 
     const result = await loginUser(req.body);
+    logger.logAuth('LOGIN_SUCCESS', result.user._id, result.user.email, req.ip);
     return res.status(200).json({
       success: true,
       message: 'Login successful',
       data: result,
     });
   } catch (error) {
+    const email = req.body?.email || null;
+    logger.logAuth('LOGIN_FAILED', null, email, req.ip);
     return sendError(res, error);
   }
 }
