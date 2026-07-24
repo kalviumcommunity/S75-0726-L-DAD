@@ -61,6 +61,17 @@ export interface AnalyticsData {
   delayTrends: DelayTrendItem[];
 }
 
+const buildAnalyticsParams = (fromDate?: string, toDate?: string, routeLimit?: number, warehouseLimit?: number) => {
+  const params = new URLSearchParams();
+
+  if (fromDate) params.append('fromDate', fromDate);
+  if (toDate) params.append('toDate', toDate);
+  if (routeLimit != null) params.append('routeLimit', String(routeLimit));
+  if (warehouseLimit != null) params.append('warehouseLimit', String(warehouseLimit));
+
+  return params;
+};
+
 export const dashboardApi = {
   getOverview: async (fromDate?: string, toDate?: string) => {
     const params = new URLSearchParams();
@@ -107,12 +118,46 @@ export const dashboardApi = {
   },
 
   getAnalytics: async (fromDate?: string, toDate?: string) => {
-    const params = new URLSearchParams();
-    if (fromDate) params.append('fromDate', fromDate);
-    if (toDate) params.append('toDate', toDate);
+    const params = buildAnalyticsParams(fromDate, toDate);
 
     const response = await httpClient.get<{ success: boolean; data: AnalyticsData }>(
       `/dashboard/analytics${params.toString() ? `?${params.toString()}` : ''}`
+    );
+    return response.data.data;
+  },
+
+  getMonthlyShipmentTrends: async (fromDate?: string, toDate?: string) => {
+    const params = buildAnalyticsParams(fromDate, toDate);
+
+    const response = await httpClient.get<{ success: boolean; data: MonthlyShipmentTrendItem[] }>(
+      `/dashboard/analytics/monthly-trends${params.toString() ? `?${params.toString()}` : ''}`
+    );
+    return response.data.data;
+  },
+
+  getDeliveryPerformanceByRoute: async (fromDate?: string, toDate?: string, routeLimit = 8) => {
+    const params = buildAnalyticsParams(fromDate, toDate, routeLimit);
+
+    const response = await httpClient.get<{ success: boolean; data: RoutePerformanceItem[] }>(
+      `/dashboard/analytics/route-performance${params.toString() ? `?${params.toString()}` : ''}`
+    );
+    return response.data.data;
+  },
+
+  getWarehouseShipmentCounts: async (fromDate?: string, toDate?: string, warehouseLimit = 8) => {
+    const params = buildAnalyticsParams(fromDate, toDate, undefined, warehouseLimit);
+
+    const response = await httpClient.get<{ success: boolean; data: WarehouseShipmentCountItem[] }>(
+      `/dashboard/analytics/warehouse-counts${params.toString() ? `?${params.toString()}` : ''}`
+    );
+    return response.data.data;
+  },
+
+  getDelayTrends: async (fromDate?: string, toDate?: string) => {
+    const params = buildAnalyticsParams(fromDate, toDate);
+
+    const response = await httpClient.get<{ success: boolean; data: DelayTrendItem[] }>(
+      `/dashboard/analytics/delay-trends${params.toString() ? `?${params.toString()}` : ''}`
     );
     return response.data.data;
   },
