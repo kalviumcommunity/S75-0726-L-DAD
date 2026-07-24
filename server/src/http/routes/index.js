@@ -24,6 +24,7 @@ function registerHttpRoutes() {
   tryMount('../../modules/activity-log/routes', '/audit-logs');
   tryMount('../../modules/dashboard/routes/dashboard.routes', '/dashboard');
   tryMount('../../modules/search/routes', '/search');
+  tryMount('../../modules/admin/routes/admin.routes', '/admin');
 
   // Health is handled in app/server.js
   return router;
