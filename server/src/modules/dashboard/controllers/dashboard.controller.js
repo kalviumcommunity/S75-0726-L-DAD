@@ -6,8 +6,21 @@ const {
   getDelayCategoryCounts,
   getAverageDeliveryTime,
   getDashboardAnalytics,
+  getMonthlyShipmentTrends,
+  getDeliveryPerformanceByRoute,
+  getWarehouseShipmentCounts,
+  getDelayTrends,
   buildDateFilter,
 } = require('../services/dashboard.service');
+
+function buildAnalyticsOptions(req) {
+  return {
+    fromDate: req.query.fromDate,
+    toDate: req.query.toDate,
+    routeLimit: req.query.routeLimit ? Number(req.query.routeLimit) : undefined,
+    warehouseLimit: req.query.warehouseLimit ? Number(req.query.warehouseLimit) : undefined,
+  };
+}
 
 function sendError(res, error) {
   const statusCode = error.statusCode || 500;
@@ -36,13 +49,52 @@ async function summary(req, res) {
 
 async function analytics(req, res) {
   try {
-    const data = await getDashboardAnalytics({
-      fromDate: req.query.fromDate,
-      toDate: req.query.toDate,
-      routeLimit: req.query.routeLimit ? Number(req.query.routeLimit) : undefined,
-      warehouseLimit: req.query.warehouseLimit ? Number(req.query.warehouseLimit) : undefined,
-    });
+    const data = await getDashboardAnalytics(buildAnalyticsOptions(req));
     return res.status(200).json({ success: true, message: 'Dashboard analytics fetched', data });
+  } catch (error) {
+    return sendError(res, error);
+  }
+}
+
+async function monthlyShipmentTrends(req, res) {
+  try {
+    const data = await getMonthlyShipmentTrends(req.query.fromDate, req.query.toDate);
+    return res.status(200).json({ success: true, message: 'Monthly shipment trends fetched', data });
+  } catch (error) {
+    return sendError(res, error);
+  }
+}
+
+async function deliveryPerformanceByRoute(req, res) {
+  try {
+    const data = await getDeliveryPerformanceByRoute(
+      req.query.fromDate,
+      req.query.toDate,
+      req.query.routeLimit ? Number(req.query.routeLimit) : undefined,
+    );
+    return res.status(200).json({ success: true, message: 'Route delivery performance fetched', data });
+  } catch (error) {
+    return sendError(res, error);
+  }
+}
+
+async function warehouseShipmentCounts(req, res) {
+  try {
+    const data = await getWarehouseShipmentCounts(
+      req.query.fromDate,
+      req.query.toDate,
+      req.query.warehouseLimit ? Number(req.query.warehouseLimit) : undefined,
+    );
+    return res.status(200).json({ success: true, message: 'Warehouse shipment counts fetched', data });
+  } catch (error) {
+    return sendError(res, error);
+  }
+}
+
+async function delayTrends(req, res) {
+  try {
+    const data = await getDelayTrends(req.query.fromDate, req.query.toDate);
+    return res.status(200).json({ success: true, message: 'Delay trends fetched', data });
   } catch (error) {
     return sendError(res, error);
   }
@@ -100,6 +152,10 @@ async function recent(req, res) {
 module.exports = {
   summary,
   analytics,
+  monthlyShipmentTrends,
+  deliveryPerformanceByRoute,
+  warehouseShipmentCounts,
+  delayTrends,
   overview,
   statusCounts,
   delayBreakdown,
