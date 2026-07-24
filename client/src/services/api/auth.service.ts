@@ -46,10 +46,11 @@ export const authApi = {
     return response.data.data.user;
   },
 
-  changePassword: async (currentPassword: string, newPassword: string) => {
+  changePassword: async (currentPassword: string, newPassword: string, confirmPassword?: string) => {
     const response = await httpClient.patch<{ success: boolean; data: { message: string } }>('/auth/me/password', {
       currentPassword,
       newPassword,
+      confirmPassword,
     });
     return response.data;
   },

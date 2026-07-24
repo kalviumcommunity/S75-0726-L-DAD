@@ -28,3 +28,12 @@ test('password change validation rejects weak or mismatched new passwords', () =
   const errors = validatePasswordChangeInput({ currentPassword: '12345678', newPassword: 'short' });
   assert(errors.includes('New password must be at least 8 characters long'));
 });
+
+test('password change validation rejects a confirmation mismatch', () => {
+  const errors = validatePasswordChangeInput({
+    currentPassword: '12345678',
+    newPassword: 'newPassword1',
+    confirmPassword: 'differentPassword1',
+  });
+  assert(errors.includes('New password confirmation does not match'));
+});

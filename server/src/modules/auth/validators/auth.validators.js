@@ -66,6 +66,7 @@ function validatePasswordChangeInput(payload = {}) {
   const errors = [];
   const currentPassword = String(payload.currentPassword || '');
   const newPassword = String(payload.newPassword || '');
+  const confirmPassword = String(payload.confirmPassword || '');
 
   if (!currentPassword) {
     errors.push('Current password is required');
@@ -75,6 +76,14 @@ function validatePasswordChangeInput(payload = {}) {
     errors.push('New password is required');
   } else if (newPassword.length < 8) {
     errors.push('New password must be at least 8 characters long');
+  }
+
+  if (confirmPassword && newPassword && confirmPassword !== newPassword) {
+    errors.push('New password confirmation does not match');
+  }
+
+  if (!confirmPassword && newPassword) {
+    errors.push('Please confirm your new password');
   }
 
   return errors;

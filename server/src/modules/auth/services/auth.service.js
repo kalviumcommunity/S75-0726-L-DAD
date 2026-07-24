@@ -107,6 +107,10 @@ async function updateUserProfile(userId, input) {
   const fullName = String(input.fullName || '').trim();
   const email = String(input.email || '').trim().toLowerCase();
 
+  if (!userId) {
+    throw createAuthError(400, 'A valid user context is required');
+  }
+
   const existingUser = await UserRepository.findUserById(userId);
   if (!existingUser) {
     throw createAuthError(404, 'User not found');
@@ -122,12 +126,25 @@ async function updateUserProfile(userId, input) {
     email,
   });
 
+  if (!updatedUser) {
+    throw createAuthError(404, 'User not found');
+  }
+
   return { user: sanitizeUser(updatedUser) };
 }
 
 async function changeUserPassword(userId, input) {
   const currentPassword = String(input.currentPassword || '');
   const newPassword = String(input.newPassword || '');
+  const confirmPassword = String(input.confirmPassword || '');
+
+  if (!userId) {
+    throw createAuthError(400, 'A valid user context is required');
+  }
+
+  if (confirmPassword && newPassword !== confirmPassword) {
+    throw createAuthError(400, 'New password confirmation does not match');
+  }
 
   const existingUser = await UserRepository.findUserByIdWithPassword(userId);
   if (!existingUser) {
