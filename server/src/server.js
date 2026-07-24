@@ -29,6 +29,7 @@ function createServer() {
   // Global error handler
   app.use((err, req, res, next) => {
     logger.logError(err, req);
+    console.error('[server][global-error]', err);
     const statusCode = err.statusCode || 500;
     const payload = {
       success: false,

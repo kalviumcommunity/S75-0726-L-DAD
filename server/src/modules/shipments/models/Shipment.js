@@ -61,11 +61,10 @@ shipmentSchema.index({ currentStatus: 1, expectedDeliveryDate: 1 });
 shipmentSchema.index({ createdAt: -1 });
 shipmentSchema.index({ shipmentId: 'text', origin: 'text', destination: 'text', currentLocation: 'text' }, { name: 'shipment_search_text', weights: { shipmentId: 10, origin: 5, destination: 5, currentLocation: 3 } });
 
-shipmentSchema.pre('validate', function validateDeliveryState(next) {
+shipmentSchema.pre('validate', async function validateDeliveryState() {
   if (this.currentStatus === SHIPMENT_STATUSES.DELIVERED && !this.actualDeliveryDate) {
     this.invalidate('actualDeliveryDate', 'Actual delivery date is required for delivered shipments');
   }
-  next();
 });
 
 module.exports = mongoose.models.Shipment || mongoose.model('Shipment', shipmentSchema);
